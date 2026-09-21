@@ -109,7 +109,7 @@ export async function signUp(
 
 export async function signInWithOAuth(formData: FormData): Promise<void> {
   const provider = formData.get("provider");
-  if (provider !== "google" && provider !== "apple") return;
+  if (provider !== "google") return;
   const next = safeNext(formData.get("next"));
 
   const supabase = await createClient();
