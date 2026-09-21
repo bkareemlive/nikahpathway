@@ -51,18 +51,16 @@ function Notice({ state }: { state: AuthState }) {
 export function OAuthButtons({ next }: { next: string }) {
   return (
     <div className="grid gap-2">
-      {(["google", "apple"] as const).map((provider) => (
-        <form key={provider} action={signInWithOAuth}>
-          <input type="hidden" name="provider" value={provider} />
-          <input type="hidden" name="next" value={next} />
-          <button
-            type="submit"
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-line bg-white text-sm font-medium text-ink transition-colors hover:border-primary"
-          >
-            Continue with {provider === "google" ? "Google" : "Apple"}
-          </button>
-        </form>
-      ))}
+      <form action={signInWithOAuth}>
+        <input type="hidden" name="provider" value="google" />
+        <input type="hidden" name="next" value={next} />
+        <button
+          type="submit"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-line bg-white text-sm font-medium text-ink transition-colors hover:border-primary"
+        >
+          Continue with Google
+        </button>
+      </form>
     </div>
   );
 }
