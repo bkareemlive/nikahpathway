@@ -82,7 +82,8 @@ export async function startCheckout(formData: FormData): Promise<void> {
   redirect(session.url);
 }
 
-export async function openBillingPortal(): Promise<void> {
+export async function openBillingPortal(formData?: FormData): Promise<void> {
+  const returnTo = formData?.get("return_to") === "/account" ? "/account" : "/membership";
   if (!stripeConfigured()) redirect("/membership?error=payments_unavailable");
 
   const supabase = await createClient();
@@ -103,7 +104,7 @@ export async function openBillingPortal(): Promise<void> {
   const base = await origin();
   const portal = await stripe.billingPortal.sessions.create({
     customer: profile.stripe_customer_id,
-    return_url: `${base}/membership`,
+    return_url: `${base}${returnTo}`,
   });
   redirect(portal.url);
 }
