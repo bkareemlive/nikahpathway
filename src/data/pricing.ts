@@ -21,7 +21,7 @@ export const planFeatures = [
     rows: [
       { label: "Write a detailed profile", free: true, fullAccess: true, lifetime: true },
       { label: "Look through every member", free: true, fullAccess: true, lifetime: true },
-      { label: "Interest requests per month", free: "0", fullAccess: "10", lifetime: "Unlimited" },
+      { label: "Interest requests per month", free: "0", fullAccess: "10, unused carry over once", lifetime: "Unlimited" },
       { label: "Reply to requests you receive", free: true, fullAccess: true, lifetime: true },
       { label: "Withdraw a request you sent", free: false, fullAccess: true, lifetime: true },
     ],
@@ -62,7 +62,7 @@ export const pricingFaq = [
   },
   {
     q: "How is Full Access different from Lifetime?",
-    a: "Full Access is a subscription that opens up every feature you need to match and talk, with 10 interest requests a month. Lifetime is a single payment for permanent access with no recurring fee and no monthly cap on requests, matches or profile views.",
+    a: "Full Access is a subscription that opens up every feature you need to match and talk, with 10 interest requests each billing month. Any you have not used carry over into the next month if you renew; if you do not renew, the balance is lost and you start with a fresh 10 whenever you rejoin. Lifetime is a single payment for permanent access with no recurring fee and no monthly cap on requests, matches or profile views.",
   },
   {
     q: "Can I stop a subscription whenever I want?",

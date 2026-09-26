@@ -12,12 +12,27 @@ const restHeaders = {
 };
 
 async function patchProfile(id: string, body: Record<string, unknown>) {
-  await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${id}`, {
+  const res = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${id}`, {
     method: "PATCH",
     headers: { ...restHeaders, Prefer: "return=minimal" },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    throw new Error(`profile update failed (${res.status}): ${await res.text()}`);
+  }
 }
+
+async function requestAnchorFor(id: string): Promise<string | null> {
+  const r = await fetch(
+    `${SUPA_URL}/rest/v1/profiles?id=eq.${id}&select=req_anchor`,
+    { headers: restHeaders },
+  );
+  if (!r.ok) throw new Error(`profile lookup failed (${r.status}): ${await r.text()}`);
+  const rows = (await r.json()) as { req_anchor: string | null }[];
+  return rows[0]?.req_anchor ?? null;
+}
+
+const CLEAR_REQUEST_CYCLE = { req_anchor: null, req_cycle: 0, req_carry: 0 };
 
 async function profileIdForCustomer(customer: string): Promise<string | null> {
   const r = await fetch(
@@ -86,11 +101,22 @@ export async function POST(req: Request) {
         if (!userId) break;
 
         const active = sub.status === "active" || sub.status === "trialing";
-        await patchProfile(userId, {
+        const patch: Record<string, unknown> = {
           stripe_customer_id: customer,
           plan: active ? "full_access" : "free",
           plan_since: active ? new Date().toISOString() : null,
-        });
+        };
+        if (!active) {
+          Object.assign(patch, CLEAR_REQUEST_CYCLE);
+        } else if (!(await requestAnchorFor(userId))) {
+          const periodStart = sub.items.data[0]?.current_period_start;
+          Object.assign(patch, {
+            req_anchor: new Date((periodStart ?? Date.now() / 1000) * 1000).toISOString(),
+            req_cycle: 0,
+            req_carry: 0,
+          });
+        }
+        await patchProfile(userId, patch);
         break;
       }
 
@@ -100,7 +126,13 @@ export async function POST(req: Request) {
         const userId =
           (sub.metadata?.user_id as string | undefined) ||
           (await profileIdForCustomer(customer));
-        if (userId) await patchProfile(userId, { plan: "free", plan_since: null });
+        if (userId) {
+          await patchProfile(userId, {
+            plan: "free",
+            plan_since: null,
+            ...CLEAR_REQUEST_CYCLE,
+          });
+        }
         break;
       }
 

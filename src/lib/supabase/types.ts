@@ -23,6 +23,9 @@ export interface ProfileRow {
   is_demo: boolean;
   plan: Plan;
   plan_since: string | null;
+  req_anchor: string | null;
+  req_cycle: number;
+  req_carry: number;
   last_active_at: string | null;
   gender: Gender | null;
   public_ref: string | null;

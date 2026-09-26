@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { limitsFor } from "@/lib/plan";
+import { addMonths, advanceCycle, cycleIndexAt } from "@/lib/request-cycles";
 import { isBlockedBetween } from "@/lib/moderation";
 
 export type InterestState = { error?: string; ok?: boolean };
@@ -34,25 +36,59 @@ export async function sendInterest(
 
   const { data: me } = await supabase
     .from("profiles")
-    .select("plan")
+    .select("plan, req_anchor, req_cycle, req_carry")
     .eq("id", user.id)
-    .maybeSingle<{ plan: string }>();
+    .maybeSingle<{
+      plan: string;
+      req_anchor: string | null;
+      req_cycle: number;
+      req_carry: number;
+    }>();
   const limits = limitsFor(me?.plan);
 
   if (limits.interestRequestsPerMonth === 0) {
     return { error: "Upgrade to Full Access or Lifetime to send interest requests." };
   }
   if (limits.interestRequestsPerMonth !== null) {
-    const since = new Date();
-    since.setDate(since.getDate() - 30);
-    const { count } = await supabase
-      .from("interest_requests")
-      .select("id", { count: "exact", head: true })
-      .eq("sender_id", user.id)
-      .gte("created_at", since.toISOString());
-    if ((count ?? 0) >= limits.interestRequestsPerMonth) {
+    const base = limits.interestRequestsPerMonth;
+    const now = new Date();
+    const countSent = async (from: Date, to?: Date) => {
+      let q = supabase
+        .from("interest_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("sender_id", user.id)
+        .gte("created_at", from.toISOString());
+      if (to) q = q.lt("created_at", to.toISOString());
+      const { count } = await q;
+      return count ?? 0;
+    };
+
+    // Members whose cycle clock is not set yet fall back to a rolling 30 days.
+    let allowance = base;
+    let windowStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    if (me?.req_anchor) {
+      const anchor = new Date(me.req_anchor);
+      const current = cycleIndexAt(anchor, now);
+      let state = { cycle: me.req_cycle, carry: me.req_carry };
+      if (current > state.cycle) {
+        const usedBefore = await countSent(
+          addMonths(anchor, state.cycle),
+          addMonths(anchor, state.cycle + 1),
+        );
+        state = advanceCycle(state, current, usedBefore, base);
+        await createAdminClient()
+          .from("profiles")
+          .update({ req_cycle: state.cycle, req_carry: state.carry })
+          .eq("id", user.id);
+      }
+      windowStart = addMonths(anchor, state.cycle);
+      allowance = base + state.carry;
+    }
+
+    if ((await countSent(windowStart)) >= allowance) {
       return {
-        error: `You have used all ${limits.interestRequestsPerMonth} requests for this month.`,
+        error: `You have used all ${allowance} interest requests for this billing period. More become available when your plan renews.`,
       };
     }
   }
