@@ -167,7 +167,7 @@ export function PricingPlans({
           <p className="mt-1 text-xs text-muted">{fullAccessSub}</p>
           <ul className="mt-6 space-y-3 text-sm text-body">
             {[
-              "10 interest requests each month",
+              "10 interest requests each month, unused ones carry over",
               "Match, and withdraw requests",
               "See who has opened your profile",
               "Message matches and send reminders",
