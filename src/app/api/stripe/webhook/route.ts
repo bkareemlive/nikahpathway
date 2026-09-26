@@ -22,14 +22,16 @@ async function patchProfile(id: string, body: Record<string, unknown>) {
   }
 }
 
-async function requestAnchorFor(id: string): Promise<string | null> {
+async function profileStateFor(
+  id: string,
+): Promise<{ plan: string; req_anchor: string | null }> {
   const r = await fetch(
-    `${SUPA_URL}/rest/v1/profiles?id=eq.${id}&select=req_anchor`,
+    `${SUPA_URL}/rest/v1/profiles?id=eq.${id}&select=plan,req_anchor`,
     { headers: restHeaders },
   );
   if (!r.ok) throw new Error(`profile lookup failed (${r.status}): ${await r.text()}`);
-  const rows = (await r.json()) as { req_anchor: string | null }[];
-  return rows[0]?.req_anchor ?? null;
+  const rows = (await r.json()) as { plan: string; req_anchor: string | null }[];
+  return rows[0] ?? { plan: "free", req_anchor: null };
 }
 
 const CLEAR_REQUEST_CYCLE = { req_anchor: null, req_cycle: 0, req_carry: 0 };
@@ -83,9 +85,13 @@ export async function POST(req: Request) {
         if (s.mode === "payment" && s.payment_status === "paid") {
           patch.plan = "lifetime";
           patch.plan_since = new Date().toISOString();
+          Object.assign(patch, CLEAR_REQUEST_CYCLE);
         } else if (s.mode === "subscription") {
-          patch.plan = "full_access";
-          patch.plan_since = new Date().toISOString();
+          // A Lifetime member never drops to a subscription plan.
+          if ((await profileStateFor(userId)).plan !== "lifetime") {
+            patch.plan = "full_access";
+            patch.plan_since = new Date().toISOString();
+          }
         }
         if (Object.keys(patch).length) await patchProfile(userId, patch);
         break;
@@ -100,6 +106,12 @@ export async function POST(req: Request) {
           (await profileIdForCustomer(customer));
         if (!userId) break;
 
+        const state = await profileStateFor(userId);
+        if (state.plan === "lifetime") {
+          await patchProfile(userId, { stripe_customer_id: customer });
+          break;
+        }
+
         const active = sub.status === "active" || sub.status === "trialing";
         const patch: Record<string, unknown> = {
           stripe_customer_id: customer,
@@ -108,7 +120,7 @@ export async function POST(req: Request) {
         };
         if (!active) {
           Object.assign(patch, CLEAR_REQUEST_CYCLE);
-        } else if (!(await requestAnchorFor(userId))) {
+        } else if (!state.req_anchor) {
           const periodStart = sub.items.data[0]?.current_period_start;
           Object.assign(patch, {
             req_anchor: new Date((periodStart ?? Date.now() / 1000) * 1000).toISOString(),
@@ -126,7 +138,7 @@ export async function POST(req: Request) {
         const userId =
           (sub.metadata?.user_id as string | undefined) ||
           (await profileIdForCustomer(customer));
-        if (userId) {
+        if (userId && (await profileStateFor(userId)).plan !== "lifetime") {
           await patchProfile(userId, {
             plan: "free",
             plan_since: null,

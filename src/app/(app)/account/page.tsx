@@ -8,6 +8,10 @@ import {
   CloseAccountForm,
 } from "@/components/account/AccountForms";
 import { ReportBlockMenu } from "@/components/app/ReportBlockMenu";
+import { openBillingPortal } from "@/lib/actions/billing";
+import { getSubscriptionSummary } from "@/lib/billing-status";
+import { planLabel } from "@/lib/plan";
+import { formatLongDate } from "@/lib/subscription-summary";
 
 type BlockedProfile = {
   id: string;
@@ -23,6 +27,16 @@ export default async function AccountPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const { data: me } = await supabase
+    .from("profiles")
+    .select("plan, stripe_customer_id")
+    .eq("id", user.id)
+    .maybeSingle<{ plan: string; stripe_customer_id: string | null }>();
+  const plan = me?.plan ?? "free";
+  const customerId = me?.stripe_customer_id ?? null;
+  const summary =
+    plan === "full_access" && customerId ? await getSubscriptionSummary(customerId) : null;
 
   const { data: blockRows } = await supabase
     .from("blocks")
@@ -59,6 +73,49 @@ export default async function AccountPage() {
       <div className="mt-8 grid max-w-xl gap-6">
         <EmailForm current={user.email ?? ""} />
         <PasswordForm />
+
+        <section className="rounded-xl border border-line bg-white p-5">
+          <h2 className="font-display text-lg font-semibold text-ink">Membership</h2>
+          <p className="mt-1 text-sm text-muted">
+            You are on the{" "}
+            <strong className="font-semibold text-ink">{planLabel(plan)}</strong> plan.
+          </p>
+          {summary && (
+            <p className="mt-2 text-sm text-body">
+              {summary.status === "ends"
+                ? `Your plan ends on ${formatLongDate(summary.on)}. You keep full access until then.`
+                : `Your plan renews on ${formatLongDate(summary.on)}.`}
+            </p>
+          )}
+          {plan === "lifetime" && (
+            <p className="mt-2 text-sm text-body">
+              Lifetime membership: no renewals and no further payments.
+            </p>
+          )}
+          {plan === "full_access" && customerId && (
+            <form action={openBillingPortal} className="mt-4">
+              <input type="hidden" name="return_to" value="/account" />
+              <button
+                type="submit"
+                className="h-10 rounded-md border border-line bg-white px-4 text-sm font-medium text-ink transition-colors hover:border-primary"
+              >
+                Manage billing
+              </button>
+              <p className="mt-2 text-xs text-muted">
+                Update your card, download invoices, or cancel. Cancelling takes
+                effect at the end of the current billing period.
+              </p>
+            </form>
+          )}
+          {plan === "free" && (
+            <Link
+              href="/membership"
+              className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+            >
+              See plans
+            </Link>
+          )}
+        </section>
 
         <section className="rounded-xl border border-line bg-white p-5">
           <h2 className="font-display text-lg font-semibold text-ink">
