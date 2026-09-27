@@ -9,9 +9,10 @@ import {
 } from "@/components/account/AccountForms";
 import { ReportBlockMenu } from "@/components/app/ReportBlockMenu";
 import { openBillingPortal } from "@/lib/actions/billing";
-import { getSubscriptionSummary } from "@/lib/billing-status";
+import { getBillingLookup } from "@/lib/billing-status";
 import { planLabel } from "@/lib/plan";
 import { formatLongDate } from "@/lib/subscription-summary";
+import { site } from "@/data/site";
 
 type BlockedProfile = {
   id: string;
@@ -35,8 +36,11 @@ export default async function AccountPage() {
     .maybeSingle<{ plan: string; stripe_customer_id: string | null }>();
   const plan = me?.plan ?? "free";
   const customerId = me?.stripe_customer_id ?? null;
-  const summary =
-    plan === "full_access" && customerId ? await getSubscriptionSummary(customerId) : null;
+  const billing =
+    plan === "full_access" && customerId
+      ? await getBillingLookup(customerId)
+      : { summary: null, customerValid: false };
+  const { summary, customerValid } = billing;
 
   const { data: blockRows } = await supabase
     .from("blocks")
@@ -92,7 +96,7 @@ export default async function AccountPage() {
               Lifetime membership: no renewals and no further payments.
             </p>
           )}
-          {plan === "full_access" && customerId && (
+          {plan === "full_access" && customerId && customerValid && (
             <form action={openBillingPortal} className="mt-4">
               <input type="hidden" name="return_to" value="/account" />
               <button
@@ -106,6 +110,15 @@ export default async function AccountPage() {
                 effect at the end of the current billing period.
               </p>
             </form>
+          )}
+          {plan === "full_access" && customerId && !customerValid && (
+            <p className="mt-3 text-sm text-body">
+              We couldn&apos;t find your billing record. Email{" "}
+              <a href={`mailto:${site.email}`} className="text-primary hover:underline">
+                {site.email}
+              </a>{" "}
+              and we&apos;ll sort it out.
+            </p>
           )}
           {plan === "free" && (
             <Link
