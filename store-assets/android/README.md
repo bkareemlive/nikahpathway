@@ -13,6 +13,16 @@
   a placeholder: the launcher icon (all 5 densities, adaptive + legacy + round), and the
   splash screen (all 11 density/orientation variants). Capacitor's default blue "X" logo
   has been fully replaced.
+- **Verified**: a debug build (`./gradlew assembleDebug`) compiles successfully end to
+  end (93 tasks, `app-debug.apk` produced). This confirms the project itself is sound;
+  the two issues hit along the way were Windows-specific and already fixed here, so you
+  shouldn't hit them again: (1) Gradle 8.14 doesn't yet support the JDK 25 Android
+  Studio bundles, so a separate JDK 21 was used for this build instead — Android
+  Studio's own "Run" button handles its JDK selection itself, so this is unlikely to
+  come up there; (2) `android/local.properties` needs forward slashes in `sdk.dir`
+  (`C:/Users/...`), not backslashes — backslash is an escape character in Java
+  `.properties` files, so a backslash path gets silently corrupted. Android Studio
+  generates this file correctly itself, so this only matters if it's ever hand-edited.
 - `store-assets/android/play-store-icon-512.png` — the 512×512 icon Play Console asks
   for separately from the app itself.
 - `store-assets/android/listing.md` — draft store listing copy (short + full
