@@ -200,7 +200,7 @@ export default async function MemberDetailPage({
         )}
 
         <div className="mt-8 border-t border-line pt-6">
-          <InterestButton recipientId={id} relation={relation} />
+          <InterestButton recipientId={id} relation={relation} isDemo={target.is_demo} />
         </div>
       </div>
     </div>

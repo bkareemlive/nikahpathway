@@ -34,6 +34,17 @@ export async function sendInterest(
     return { error: "You cannot contact this member." };
   }
 
+  const { data: recipientProfile } = await supabase
+    .from("profiles")
+    .select("is_demo")
+    .eq("id", recipient.data)
+    .maybeSingle<{ is_demo: boolean }>();
+  if (recipientProfile?.is_demo) {
+    return {
+      error: "This is a demo profile used to preview NikahPathway and cannot receive requests.",
+    };
+  }
+
   const { data: me } = await supabase
     .from("profiles")
     .select("plan, req_anchor, req_cycle, req_carry")
