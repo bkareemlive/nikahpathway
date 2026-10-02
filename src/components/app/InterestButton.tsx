@@ -23,11 +23,22 @@ function Submit() {
 export function InterestButton({
   recipientId,
   relation,
+  isDemo = false,
 }: {
   recipientId: string;
   relation: Relation;
+  isDemo?: boolean;
 }) {
   const [state, action] = useActionState<InterestState, FormData>(sendInterest, {});
+
+  if (isDemo) {
+    return (
+      <p className="rounded-md border border-line bg-cream px-3 py-2.5 text-sm text-muted">
+        This is a demo profile, used to preview NikahPathway. It can&apos;t receive
+        requests.
+      </p>
+    );
+  }
 
   if (relation === "matched") {
     return (
