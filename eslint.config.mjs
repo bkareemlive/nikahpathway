@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The native Android project (Gradle build output, Capacitor's own
+    // bundled JS) is a separate project, not part of this app's source.
+    "android/**",
   ]),
 ]);
 

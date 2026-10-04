@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Script from "next/script";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   signIn,
@@ -49,6 +49,7 @@ function Notice({ state }: { state: AuthState }) {
 }
 
 export function OAuthButtons({ next }: { next: string }) {
+  const [showAppleNotice, setShowAppleNotice] = useState(false);
   return (
     <div className="grid gap-2">
       <form action={signInWithOAuth}>
@@ -61,6 +62,25 @@ export function OAuthButtons({ next }: { next: string }) {
           Continue with Google
         </button>
       </form>
+
+      {/* Apple sign-in isn't configured yet (needs an Apple Developer Program
+          membership). Once it is, swap this placeholder for the same pattern
+          as the Google button above: a <form action={signInWithOAuth}> with
+          provider="apple", and widen the provider check in
+          signInWithOAuth (src/lib/actions/auth.ts) back to accept "apple". */}
+      <button
+        type="button"
+        onClick={() => setShowAppleNotice(true)}
+        className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-line bg-white text-sm font-medium text-ink transition-colors hover:border-primary"
+      >
+        Continue with Apple
+      </button>
+      {showAppleNotice && (
+        <p className="rounded-md border border-line bg-cream px-3 py-2 text-sm text-muted">
+          Sign in with Apple is in development. Please check back soon, or use
+          Google or email for now.
+        </p>
+      )}
     </div>
   );
 }
