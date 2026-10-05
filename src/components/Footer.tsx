@@ -47,6 +47,11 @@ export function Footer() {
                     Privacy Policy
                   </Link>
                 </li>
+                <li>
+                  <Link href="/safety" className="text-muted hover:text-primary">
+                    Child Safety Standards
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
