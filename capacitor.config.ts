@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.nikahpathway.app",
+  appId: "com.nikahpathway.ios",
   appName: "NikahPathway",
   webDir: "www",
   server: {
