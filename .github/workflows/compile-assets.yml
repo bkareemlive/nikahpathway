@@ -1,0 +1,37 @@
+name: Compile Asset Catalog
+on:
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile AppIcon asset catalog
+        run: |
+          mkdir -p out_car
+          xcrun actool \
+            --output-format human-readable-text \
+            --notices --warnings \
+            --export-dependency-info /tmp/actool_deps.txt \
+            --output-partial-info-plist /tmp/actool_partial.plist \
+            --app-icon AppIcon \
+            --compress-pngs \
+            --enable-on-demand-resources YES \
+            --target-device iphone \
+            --target-device ipad \
+            --minimum-deployment-target 14.0 \
+            --platform iphoneos \
+            --product-type com.apple.product-type.application \
+            --compile out_car/ \
+            ios/App/App/Assets.xcassets 2>&1
+          echo "=== Output ==="
+          ls -lh out_car/
+
+      - name: Upload Assets.car
+        uses: actions/upload-artifact@v4
+        with:
+          name: Assets-car
+          path: out_car/Assets.car
+          if-no-files-found: error
