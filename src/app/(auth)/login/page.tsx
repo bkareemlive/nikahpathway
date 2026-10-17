@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LoginForm } from "@/components/auth/forms";
+import { isIosApp } from "@/lib/native-app";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -18,7 +19,7 @@ export default async function LoginPage({
           Sign-in failed. Please try again.
         </p>
       )}
-      <LoginForm next={safeNext} />
+      <LoginForm next={safeNext} native={await isIosApp()} />
     </>
   );
 }

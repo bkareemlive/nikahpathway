@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { isIosApp } from "@/lib/native-app";
 
 export type AuthState = { error?: string; message?: string };
 
@@ -109,7 +110,7 @@ export async function signUp(
 
 export async function signInWithOAuth(formData: FormData): Promise<void> {
   const provider = formData.get("provider");
-  if (provider !== "google") return;
+  if (provider !== "google" || (await isIosApp())) return;
   const next = safeNext(formData.get("next"));
 
   const supabase = await createClient();

@@ -95,17 +95,22 @@ function Divider() {
   );
 }
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, native = false }: { next: string; native?: boolean }) {
   const [state, action] = useActionState<AuthState, FormData>(signIn, {});
   return (
     <div className="rounded-2xl border border-line bg-white p-6 shadow-card">
       <h1 className="font-display text-2xl font-semibold text-ink">Sign in</h1>
       <p className="mt-1 text-sm text-muted">Welcome back.</p>
+      {native && <div className="mt-6" />}
 
-      <div className="mt-6">
-        <OAuthButtons next={next} />
-      </div>
-      <Divider />
+      {!native && (
+        <>
+          <div className="mt-6">
+            <OAuthButtons next={next} />
+          </div>
+          <Divider />
+        </>
+      )}
 
       <form action={action} className="grid gap-3">
         <input type="hidden" name="next" value={next} />
@@ -139,7 +144,7 @@ export function LoginForm({ next }: { next: string }) {
   );
 }
 
-export function RegisterForm({ next }: { next: string }) {
+export function RegisterForm({ next, native = false }: { next: string; native?: boolean }) {
   const [state, action] = useActionState<AuthState, FormData>(signUp, {});
   return (
     <div className="rounded-2xl border border-line bg-white p-6 shadow-card">
@@ -147,11 +152,16 @@ export function RegisterForm({ next }: { next: string }) {
       <p className="mt-1 text-sm text-muted">
         Free to join. You will write your profile next.
       </p>
+      {native && <div className="mt-6" />}
 
-      <div className="mt-6">
-        <OAuthButtons next={next} />
-      </div>
-      <Divider />
+      {!native && (
+        <>
+          <div className="mt-6">
+            <OAuthButtons next={next} />
+          </div>
+          <Divider />
+        </>
+      )}
 
       <form action={action} className="grid gap-3">
         <input type="hidden" name="next" value={next} />

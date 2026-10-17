@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Container } from "@/components/Container";
 import { Button } from "@/components/Button";
 import { SectionHeading } from "@/components/SectionHeading";
@@ -8,6 +9,7 @@ import { planFeatures, pricingFaq } from "@/data/pricing";
 import { site } from "@/data/site";
 import { createClient } from "@/lib/supabase/server";
 import { planLabel } from "@/lib/plan";
+import { isIosApp } from "@/lib/native-app";
 
 export const metadata: Metadata = {
   title: "Membership",
@@ -40,6 +42,7 @@ export default async function PricingPage({
 }: {
   searchParams: Promise<{ error?: string; canceled?: string }>;
 }) {
+  if (await isIosApp()) redirect("/dashboard");
   const sp = await searchParams;
   const noticeKey = sp.canceled ? "canceled" : sp.error;
   const notice = noticeKey ? NOTICES[noticeKey] : undefined;
