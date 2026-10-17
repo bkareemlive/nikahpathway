@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { limitsFor } from "@/lib/plan";
+import { isIosApp } from "@/lib/native-app";
 import { addMonths, advanceCycle, cycleIndexAt } from "@/lib/request-cycles";
 import { isBlockedBetween } from "@/lib/moderation";
 
@@ -58,7 +59,11 @@ export async function sendInterest(
   const limits = limitsFor(me?.plan);
 
   if (limits.interestRequestsPerMonth === 0) {
-    return { error: "Upgrade to Full Access or Lifetime to send interest requests." };
+    return {
+      error: (await isIosApp())
+        ? "Sending interest requests isn't available on your account."
+        : "Upgrade to Full Access or Lifetime to send interest requests.",
+    };
   }
   if (limits.interestRequestsPerMonth !== null) {
     const base = limits.interestRequestsPerMonth;

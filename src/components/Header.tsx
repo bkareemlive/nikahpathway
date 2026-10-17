@@ -9,8 +9,9 @@ import { Container } from "./Container";
 import { nav, site } from "@/data/site";
 import { signOut } from "@/lib/actions/auth";
 
-export function Header({ isAuthed = false }: { isAuthed?: boolean }) {
+export function Header({ isAuthed = false, native = false }: { isAuthed?: boolean; native?: boolean }) {
   const pathname = usePathname();
+  const items = native ? nav.filter((item) => item.href !== "/membership") : nav;
   const [open, setOpen] = useState(false);
 
   return (
@@ -19,7 +20,7 @@ export function Header({ isAuthed = false }: { isAuthed?: boolean }) {
         <Logo />
 
         <nav className="hidden items-center gap-5 xl:flex">
-          {nav.map((item) => {
+          {items.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
@@ -85,7 +86,7 @@ export function Header({ isAuthed = false }: { isAuthed?: boolean }) {
       {open && (
         <div className="border-t border-line bg-white xl:hidden">
           <Container className="flex flex-col py-4">
-            {nav.map((item) => (
+            {items.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

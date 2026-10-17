@@ -11,6 +11,7 @@ import { ReportBlockMenu } from "@/components/app/ReportBlockMenu";
 import { openBillingPortal } from "@/lib/actions/billing";
 import { getBillingLookup } from "@/lib/billing-status";
 import { planLabel } from "@/lib/plan";
+import { isIosApp } from "@/lib/native-app";
 import { formatLongDate } from "@/lib/subscription-summary";
 import { site } from "@/data/site";
 
@@ -35,6 +36,7 @@ export default async function AccountPage() {
     .eq("id", user.id)
     .maybeSingle<{ plan: string; stripe_customer_id: string | null }>();
   const plan = me?.plan ?? "free";
+  const native = await isIosApp();
   const customerId = me?.stripe_customer_id ?? null;
   const billing =
     plan === "full_access" && customerId
@@ -96,7 +98,7 @@ export default async function AccountPage() {
               Lifetime membership: no renewals and no further payments.
             </p>
           )}
-          {plan === "full_access" && customerId && customerValid && (
+          {!native && plan === "full_access" && customerId && customerValid && (
             <form action={openBillingPortal} className="mt-4">
               <input type="hidden" name="return_to" value="/account" />
               <button
@@ -111,7 +113,7 @@ export default async function AccountPage() {
               </p>
             </form>
           )}
-          {plan === "full_access" && customerId && !customerValid && (
+          {!native && plan === "full_access" && customerId && !customerValid && (
             <p className="mt-3 text-sm text-body">
               We couldn&apos;t find your billing record. Email{" "}
               <a href={`mailto:${site.email}`} className="text-primary hover:underline">
@@ -120,7 +122,7 @@ export default async function AccountPage() {
               and we&apos;ll sort it out.
             </p>
           )}
-          {plan === "free" && (
+          {!native && plan === "free" && (
             <Link
               href="/membership"
               className="mt-3 inline-block text-sm font-medium text-primary hover:underline"

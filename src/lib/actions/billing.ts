@@ -11,6 +11,7 @@ import {
   type CheckoutCycle,
 } from "@/lib/stripe";
 import { promo } from "@/data/pricing";
+import { isIosApp } from "@/lib/native-app";
 
 async function origin() {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL;
@@ -22,6 +23,7 @@ async function origin() {
 }
 
 export async function startCheckout(formData: FormData): Promise<void> {
+  if (await isIosApp()) redirect("/dashboard");
   const plan = formData.get("plan");
   const cycle = (formData.get("cycle") as string) === "sixMonth" ? "sixMonth" : "monthly";
   if (plan !== "full_access" && plan !== "lifetime") {
@@ -83,6 +85,7 @@ export async function startCheckout(formData: FormData): Promise<void> {
 }
 
 export async function openBillingPortal(formData?: FormData): Promise<void> {
+  if (await isIosApp()) redirect("/account");
   const returnTo = formData?.get("return_to") === "/account" ? "/account" : "/membership";
   if (!stripeConfigured()) redirect("/membership?error=payments_unavailable");
 
