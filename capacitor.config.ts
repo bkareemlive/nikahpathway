@@ -14,6 +14,10 @@ const config: CapacitorConfig = {
   android: {
     // Matches --color-primary in src/app/globals.css.
     backgroundColor: "#0b5d42",
+    // Lets the server tell this WebView apart from any other Android
+    // browser (see isAndroidApp in src/lib/native-app.ts) to route purchase
+    // UI through native Play Billing instead of Stripe checkout.
+    appendUserAgent: "NikahPathwayAndroidApp",
   },
 };
 

@@ -5,6 +5,7 @@ import { Button } from "./Button";
 import { plans, promo } from "@/data/pricing";
 import { site } from "@/data/site";
 import { startCheckout, openBillingPortal } from "@/lib/actions/billing";
+import { GooglePlayCheckoutButton, RestoreGooglePlayPurchasesLink } from "./GooglePlayCheckoutButtons";
 
 const check = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary">
@@ -21,11 +22,26 @@ function CheckoutButton({
   plan,
   cycle,
   label,
+  platform,
+  userId,
 }: {
   plan: "full_access" | "lifetime";
   cycle: "monthly" | "sixMonth";
   label: string;
+  platform: "web" | "android";
+  userId: string | null;
 }) {
+  if (platform === "android" && userId) {
+    return (
+      <GooglePlayCheckoutButton
+        plan={plan}
+        cycle={cycle}
+        promoActive={promo.active}
+        label={label}
+        userId={userId}
+      />
+    );
+  }
   return (
     <form action={startCheckout} className="w-full">
       <input type="hidden" name="plan" value={plan} />
@@ -40,9 +56,16 @@ function CheckoutButton({
 export function PricingPlans({
   loggedIn = false,
   currentPlan = null,
+  platform = "web",
+  userId = null,
 }: {
   loggedIn?: boolean;
   currentPlan?: string | null;
+  /** "android" swaps the checkout buttons for native Play Billing instead
+   * of Stripe — Google Play's Payments policy requires "dating"
+   * subscriptions to use Play Billing in-app. */
+  platform?: "web" | "android";
+  userId?: string | null;
 }) {
   const [cycle, setCycle] = useState<"monthly" | "sixMonth">("monthly");
   const hasLifetime = currentPlan === "lifetime";
@@ -191,14 +214,31 @@ export function PricingPlans({
             ) : hasFullAccess ? (
               <div className="grid gap-2">
                 <span className={disabledBtn}>Current plan</span>
-                <form action={openBillingPortal}>
-                  <button type="submit" className="w-full text-xs font-medium text-primary hover:underline">
-                    Manage billing
-                  </button>
-                </form>
+                {platform === "android" ? (
+                  <a
+                    href="https://play.google.com/store/account/subscriptions?package=com.nikahpathway.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full text-center text-xs font-medium text-primary hover:underline"
+                  >
+                    Manage in Google Play
+                  </a>
+                ) : (
+                  <form action={openBillingPortal}>
+                    <button type="submit" className="w-full text-xs font-medium text-primary hover:underline">
+                      Manage billing
+                    </button>
+                  </form>
+                )}
               </div>
             ) : (
-              <CheckoutButton plan="full_access" cycle={cycle} label="Choose Full Access" />
+              <CheckoutButton
+                plan="full_access"
+                cycle={cycle}
+                label="Choose Full Access"
+                platform={platform}
+                userId={userId}
+              />
             )}
           </div>
         </div>
@@ -250,7 +290,13 @@ export function PricingPlans({
             ) : hasLifetime ? (
               <span className={disabledBtn}>You have Lifetime</span>
             ) : (
-              <CheckoutButton plan="lifetime" cycle={cycle} label="Choose Lifetime" />
+              <CheckoutButton
+                plan="lifetime"
+                cycle={cycle}
+                label="Choose Lifetime"
+                platform={platform}
+                userId={userId}
+              />
             )}
           </div>
           <p className="mt-3 text-center text-xs text-muted">
@@ -258,6 +304,7 @@ export function PricingPlans({
           </p>
         </div>
       </div>
+      {platform === "android" && loggedIn && <RestoreGooglePlayPurchasesLink />}
     </div>
   );
 }
