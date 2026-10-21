@@ -11,7 +11,7 @@ import { ReportBlockMenu } from "@/components/app/ReportBlockMenu";
 import { openBillingPortal } from "@/lib/actions/billing";
 import { getBillingLookup } from "@/lib/billing-status";
 import { planLabel } from "@/lib/plan";
-import { isIosApp } from "@/lib/native-app";
+import { isIosApp, isAndroidApp } from "@/lib/native-app";
 import { formatLongDate } from "@/lib/subscription-summary";
 import { site } from "@/data/site";
 
@@ -32,11 +32,13 @@ export default async function AccountPage() {
 
   const { data: me } = await supabase
     .from("profiles")
-    .select("plan, stripe_customer_id")
+    .select("plan, stripe_customer_id, billing_source")
     .eq("id", user.id)
-    .maybeSingle<{ plan: string; stripe_customer_id: string | null }>();
+    .maybeSingle<{ plan: string; stripe_customer_id: string | null; billing_source: string | null }>();
   const plan = me?.plan ?? "free";
-  const native = await isIosApp();
+  const isIos = await isIosApp();
+  const isAndroid = await isAndroidApp();
+  const isGooglePlayBilled = me?.billing_source === "google_play";
   const customerId = me?.stripe_customer_id ?? null;
   const billing =
     plan === "full_access" && customerId
@@ -98,7 +100,17 @@ export default async function AccountPage() {
               Lifetime membership: no renewals and no further payments.
             </p>
           )}
-          {!native && plan === "full_access" && customerId && customerValid && (
+          {isAndroid && plan === "full_access" && isGooglePlayBilled && (
+            <a
+              href="https://play.google.com/store/account/subscriptions?package=com.nikahpathway.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block h-10 rounded-md border border-line bg-white px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-primary"
+            >
+              Manage in Google Play
+            </a>
+          )}
+          {!isIos && !isAndroid && plan === "full_access" && customerId && customerValid && (
             <form action={openBillingPortal} className="mt-4">
               <input type="hidden" name="return_to" value="/account" />
               <button
@@ -113,7 +125,7 @@ export default async function AccountPage() {
               </p>
             </form>
           )}
-          {!native && plan === "full_access" && customerId && !customerValid && (
+          {!isIos && !isAndroid && plan === "full_access" && customerId && !customerValid && (
             <p className="mt-3 text-sm text-body">
               We couldn&apos;t find your billing record. Email{" "}
               <a href={`mailto:${site.email}`} className="text-primary hover:underline">
@@ -122,7 +134,7 @@ export default async function AccountPage() {
               and we&apos;ll sort it out.
             </p>
           )}
-          {!native && plan === "free" && (
+          {!isIos && plan === "free" && (
             <Link
               href="/membership"
               className="mt-3 inline-block text-sm font-medium text-primary hover:underline"

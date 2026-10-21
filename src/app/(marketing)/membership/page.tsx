@@ -9,7 +9,7 @@ import { planFeatures, pricingFaq } from "@/data/pricing";
 import { site } from "@/data/site";
 import { createClient } from "@/lib/supabase/server";
 import { planLabel } from "@/lib/plan";
-import { isIosApp } from "@/lib/native-app";
+import { isIosApp, isAndroidApp } from "@/lib/native-app";
 
 export const metadata: Metadata = {
   title: "Membership",
@@ -43,6 +43,7 @@ export default async function PricingPage({
   searchParams: Promise<{ error?: string; canceled?: string }>;
 }) {
   if (await isIosApp()) redirect("/dashboard");
+  const platform: "web" | "android" = (await isAndroidApp()) ? "android" : "web";
   const sp = await searchParams;
   const noticeKey = sp.canceled ? "canceled" : sp.error;
   const notice = noticeKey ? NOTICES[noticeKey] : undefined;
@@ -94,7 +95,12 @@ export default async function PricingPage({
               You are on the <strong>{planLabel(currentPlan)}</strong> plan.
             </p>
           )}
-          <PricingPlans loggedIn={Boolean(user)} currentPlan={currentPlan} />
+          <PricingPlans
+            loggedIn={Boolean(user)}
+            currentPlan={currentPlan}
+            platform={platform}
+            userId={user?.id ?? null}
+          />
           <p className="mt-8 text-center text-sm text-muted">
             Every paid plan includes a 7-day money-back guarantee.
           </p>
