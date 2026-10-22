@@ -46,6 +46,7 @@ captures/
 # Keystore files — a leaked signing key lets anyone publish updates as this app.
 *.jks
 *.keystore
+keystore.properties
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
