@@ -9,9 +9,33 @@ const IOS_DEVICE = /\b(iPhone|iPad|iPod)\b/;
 const NOT_THE_SHELL =
   /Safari\/|CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|DuckDuckGo|FBAN|FBAV|Instagram|Line\/|MicroMessenger|Twitter|LinkedInApp|Snapchat|Pinterest|TikTok/i;
 
+// capacitor.config.ts sets ios.appendUserAgent to this exact string. Builds
+// that carry it include the native StoreKit plugin, so they get the In-App
+// Purchase membership UI; older builds don't, and keep purchase UI hidden.
+const IOS_APP_UA_TOKEN = "NikahPathwayIosApp";
+
 export function isIosAppUserAgent(userAgent: string | null | undefined): boolean {
   if (!userAgent) return false;
+  if (userAgent.includes(IOS_APP_UA_TOKEN)) return true;
   return IOS_DEVICE.test(userAgent) && !NOT_THE_SHELL.test(userAgent);
+}
+
+export function iosAppHasPurchases(userAgent: string | null | undefined): boolean {
+  return Boolean(userAgent?.includes(IOS_APP_UA_TOKEN));
+}
+
+/** True for an iOS app build with the native StoreKit plugin (membership is
+ * sold in the app through In-App Purchase). */
+export async function isIosAppWithPurchases(): Promise<boolean> {
+  return iosAppHasPurchases((await headers()).get("user-agent"));
+}
+
+/** True for an iOS app build WITHOUT native billing (the first release):
+ * every purchase prompt stays hidden there, since Stripe isn't allowed in
+ * the app and there's no In-App Purchase to offer instead. */
+export async function isIosAppWithoutPurchases(): Promise<boolean> {
+  const ua = (await headers()).get("user-agent");
+  return isIosAppUserAgent(ua) && !iosAppHasPurchases(ua);
 }
 
 /** True when the request comes from the NikahPathway iOS app. App Store rules

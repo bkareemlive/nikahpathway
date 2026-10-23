@@ -11,7 +11,7 @@ import { ReportBlockMenu } from "@/components/app/ReportBlockMenu";
 import { openBillingPortal } from "@/lib/actions/billing";
 import { getBillingLookup } from "@/lib/billing-status";
 import { planLabel } from "@/lib/plan";
-import { isIosApp, isAndroidApp } from "@/lib/native-app";
+import { isIosApp, isIosAppWithPurchases, isAndroidApp } from "@/lib/native-app";
 import { APP_STORE_MANAGE_SUBSCRIPTIONS_URL } from "@/data/app-store-products";
 import { formatLongDate } from "@/lib/subscription-summary";
 import { site } from "@/data/site";
@@ -38,6 +38,7 @@ export default async function AccountPage() {
     .maybeSingle<{ plan: string; stripe_customer_id: string | null; billing_source: string | null }>();
   const plan = me?.plan ?? "free";
   const isIos = await isIosApp();
+  const iosHasPurchases = await isIosAppWithPurchases();
   const isAndroid = await isAndroidApp();
   const isGooglePlayBilled = me?.billing_source === "google_play";
   const isAppleBilled = me?.billing_source === "apple";
@@ -144,7 +145,7 @@ export default async function AccountPage() {
               and we&apos;ll sort it out.
             </p>
           )}
-          {plan === "free" && (
+          {!(isIos && !iosHasPurchases) && plan === "free" && (
             <Link
               href="/membership"
               className="mt-3 inline-block text-sm font-medium text-primary hover:underline"

@@ -11,6 +11,13 @@ const config: CapacitorConfig = {
     url: "https://nikahpathway.com",
     cleartext: false,
   },
+  ios: {
+    // Lets the server tell this build apart from older builds that have no
+    // native billing code (see isIosAppWithPurchases in
+    // src/lib/native-app.ts): only builds carrying this token are shown
+    // the In-App Purchase membership UI.
+    appendUserAgent: "NikahPathwayIosApp",
+  },
   android: {
     // Matches --color-primary in src/app/globals.css.
     backgroundColor: "#0b5d42",

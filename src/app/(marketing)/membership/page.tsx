@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Container } from "@/components/Container";
 import { Button } from "@/components/Button";
 import { SectionHeading } from "@/components/SectionHeading";
@@ -8,7 +9,7 @@ import { planFeatures, pricingFaq } from "@/data/pricing";
 import { site } from "@/data/site";
 import { createClient } from "@/lib/supabase/server";
 import { planLabel } from "@/lib/plan";
-import { isIosApp, isAndroidApp } from "@/lib/native-app";
+import { isIosApp, isIosAppWithPurchases, isAndroidApp } from "@/lib/native-app";
 
 export const metadata: Metadata = {
   title: "Membership",
@@ -41,6 +42,10 @@ export default async function PricingPage({
 }: {
   searchParams: Promise<{ error?: string; canceled?: string }>;
 }) {
+  // An iOS build without native billing (the first release) has nothing to
+  // sell with: Stripe is not allowed in the app and there is no In-App
+  // Purchase to offer instead.
+  if ((await isIosApp()) && !(await isIosAppWithPurchases())) redirect("/dashboard");
   const platform: "web" | "android" | "ios" = (await isIosApp())
     ? "ios"
     : (await isAndroidApp())
