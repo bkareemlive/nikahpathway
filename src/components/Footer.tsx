@@ -3,8 +3,7 @@ import { Container } from "./Container";
 import { Logo } from "./Logo";
 import { footerNav, site } from "@/data/site";
 
-export function Footer({ native = false }: { native?: boolean }) {
-  const items = native ? footerNav.filter((item) => item.href !== "/membership") : footerNav;
+export function Footer() {
   return (
     <footer className="mt-24 border-t border-line bg-cream">
       <Container className="py-14">
@@ -24,7 +23,7 @@ export function Footer({ native = false }: { native?: boolean }) {
                 Explore
               </h3>
               <ul className="mt-4 space-y-2.5 text-sm">
-                {items.map((item) => (
+                {footerNav.map((item) => (
                   <li key={item.href}>
                     <Link href={item.href} className="text-muted hover:text-primary">
                       {item.label}

@@ -6,7 +6,6 @@ import { dobRangeForAges } from "@/lib/profile-display";
 import { blockedIdSet } from "@/lib/moderation";
 import { MemberCard } from "@/components/app/MemberCard";
 import { BrowseFilters, type BrowseParams } from "@/components/app/BrowseFilters";
-import { isIosApp } from "@/lib/native-app";
 
 export const metadata: Metadata = { title: "Browse" };
 
@@ -107,7 +106,7 @@ export default async function BrowsePage({
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
         <div className="lg:sticky lg:top-6 lg:self-start">
-          <BrowseFilters params={sp} isPaid={isPaid} native={await isIosApp()} />
+          <BrowseFilters params={sp} isPaid={isPaid} />
         </div>
 
         <div>

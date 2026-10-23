@@ -6,7 +6,6 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { ProfileCard } from "@/components/ProfileCard";
 import { site } from "@/data/site";
 import { sisters, brothers } from "@/data/profiles";
-import { isIosApp } from "@/lib/native-app";
 
 export const metadata: Metadata = {
   title: "Members",
@@ -14,8 +13,7 @@ export const metadata: Metadata = {
     "A sample of the practicing brothers and sisters currently looking for marriage. Full profiles are visible once you join, which is free.",
 };
 
-export default async function MembersPage() {
-  const native = await isIosApp();
+export default function MembersPage() {
   return (
     <>
       <section className="border-b border-line bg-cream py-16">
@@ -62,14 +60,12 @@ export default async function MembersPage() {
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Button href={site.registerUrl}>Start your free profile</Button>
-            {!native && (
-              <Link
-                href="/membership"
-                className="inline-flex h-11 items-center px-2 text-sm font-medium text-primary hover:underline"
-              >
-                See what a plan adds →
-              </Link>
-            )}
+            <Link
+              href="/membership"
+              className="inline-flex h-11 items-center px-2 text-sm font-medium text-primary hover:underline"
+            >
+              See what a plan adds →
+            </Link>
           </div>
         </Container>
       </section>

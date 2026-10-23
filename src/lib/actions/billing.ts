@@ -23,7 +23,7 @@ async function origin() {
 }
 
 export async function startCheckout(formData: FormData): Promise<void> {
-  if (await isIosApp()) redirect("/dashboard");
+  if (await isIosApp()) redirect("/membership");
   // Android purchases go through native Play Billing (see
   // GooglePlayCheckoutButtons), never this Stripe flow — Google Play's
   // Payments policy requires "dating" subscriptions to use Play Billing

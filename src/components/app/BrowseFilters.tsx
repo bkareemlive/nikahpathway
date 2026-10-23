@@ -15,11 +15,9 @@ const legendCls = "text-xs font-semibold uppercase tracking-wider text-muted";
 export function BrowseFilters({
   params,
   isPaid,
-  native = false,
 }: {
   params: BrowseParams;
   isPaid: boolean;
-  native?: boolean;
 }) {
   const v = (k: string) => params[k] ?? "";
 
@@ -89,7 +87,7 @@ export function BrowseFilters({
         <div className="border-t border-line pt-4">
           <div className="flex items-center justify-between">
             <p className={legendCls}>Detailed filters</p>
-            {!isPaid && !native && (
+            {!isPaid && (
               <Link href="/membership" className="text-xs font-medium text-primary hover:underline">
                 Upgrade to use
               </Link>

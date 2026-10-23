@@ -12,6 +12,7 @@ import { openBillingPortal } from "@/lib/actions/billing";
 import { getBillingLookup } from "@/lib/billing-status";
 import { planLabel } from "@/lib/plan";
 import { isIosApp, isAndroidApp } from "@/lib/native-app";
+import { APP_STORE_MANAGE_SUBSCRIPTIONS_URL } from "@/data/app-store-products";
 import { formatLongDate } from "@/lib/subscription-summary";
 import { site } from "@/data/site";
 
@@ -39,6 +40,7 @@ export default async function AccountPage() {
   const isIos = await isIosApp();
   const isAndroid = await isAndroidApp();
   const isGooglePlayBilled = me?.billing_source === "google_play";
+  const isAppleBilled = me?.billing_source === "apple";
   const customerId = me?.stripe_customer_id ?? null;
   const billing =
     plan === "full_access" && customerId
@@ -110,6 +112,14 @@ export default async function AccountPage() {
               Manage in Google Play
             </a>
           )}
+          {isIos && plan === "full_access" && isAppleBilled && (
+            <a
+              href={APP_STORE_MANAGE_SUBSCRIPTIONS_URL}
+              className="mt-4 inline-block h-10 rounded-md border border-line bg-white px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-primary"
+            >
+              Manage subscription
+            </a>
+          )}
           {!isIos && !isAndroid && plan === "full_access" && customerId && customerValid && (
             <form action={openBillingPortal} className="mt-4">
               <input type="hidden" name="return_to" value="/account" />
@@ -134,7 +144,7 @@ export default async function AccountPage() {
               and we&apos;ll sort it out.
             </p>
           )}
-          {!isIos && plan === "free" && (
+          {plan === "free" && (
             <Link
               href="/membership"
               className="mt-3 inline-block text-sm font-medium text-primary hover:underline"

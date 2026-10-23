@@ -3,7 +3,6 @@ import Link from "next/link";
 import { requireActiveProfile } from "@/lib/supabase/queries";
 import { ageFromDob } from "@/lib/profile-display";
 import { limitsFor } from "@/lib/plan";
-import { isIosApp } from "@/lib/native-app";
 
 export const metadata: Metadata = { title: "Who viewed you" };
 
@@ -34,7 +33,6 @@ function when(iso: string) {
 export default async function ViewedPage() {
   const { supabase, user, profile } = await requireActiveProfile();
   const limits = limitsFor(profile.plan);
-  const native = await isIosApp();
 
   const { count } = await supabase
     .from("profile_views")
@@ -53,21 +51,17 @@ export default async function ViewedPage() {
           <p className="mt-1 text-sm text-muted">
             {total === 1 ? "member has" : "members have"} looked at your profile.
           </p>
-          {!native && (
-            <>
-              <p className="mx-auto mt-4 max-w-sm text-sm text-muted">
-                See exactly who, and when, with Full Access or Lifetime.
-              </p>
-              <div className="mt-5">
-                <Link
-                  href="/membership"
-                  className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-semibold text-white hover:bg-primary-dark"
-                >
-                  View membership
-                </Link>
-              </div>
-            </>
-          )}
+          <p className="mx-auto mt-4 max-w-sm text-sm text-muted">
+            See exactly who, and when, with Full Access or Lifetime.
+          </p>
+          <div className="mt-5">
+            <Link
+              href="/membership"
+              className="inline-flex h-11 items-center rounded-md bg-primary px-6 text-sm font-semibold text-white hover:bg-primary-dark"
+            >
+              View membership
+            </Link>
+          </div>
         </div>
       </div>
     );

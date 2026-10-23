@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { limitsFor, NUDGE_COOLDOWN_HOURS } from "@/lib/plan";
-import { isIosApp } from "@/lib/native-app";
 import { isoHoursAgo } from "@/lib/time";
 import { isBlockedBetween } from "@/lib/moderation";
 
@@ -42,11 +41,7 @@ export async function sendNudge(
     .eq("id", user.id)
     .maybeSingle<{ plan: string }>();
   if (!limitsFor(me?.plan).sendNudges) {
-    return {
-      error: (await isIosApp())
-        ? "Nudges aren't available on your account."
-        : "Upgrade to Full Access or Lifetime to send nudges.",
-    };
+    return { error: "Upgrade to Full Access or Lifetime to send nudges." };
   }
 
   // Only nudge people you already have a thread or a pending request with.
