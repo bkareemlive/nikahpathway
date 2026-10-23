@@ -1,7 +1,12 @@
-# Payments (Stripe)
+# Payments (Stripe + Google Play Billing)
 
 Plan gating is live and works without Stripe. Checkout stays inert until the
 keys below are set — the buttons then start real Stripe Checkout.
+
+The web site and the iOS app use Stripe. **The Android app uses Google Play
+Billing instead** — Google Play's Payments policy requires "dating"
+subscriptions to use Play Billing in-app, so Stripe checkout is unreachable
+from inside the Android app. See the "Google Play Billing" section below.
 
 ## Plans
 
@@ -118,6 +123,36 @@ paid access has ended.
 Chargebacks and disputes are handled in Stripe under **Disputes**. Automatic
 refund handling (reacting to Stripe's refund events) is possible later; it needs
 the webhook endpoint in Stripe to subscribe to `charge.refunded`.
+
+## Google Play Billing (Android app)
+
+Full setup checklist (Play Console products, service account, Real-time
+Developer Notifications, testing without real charges):
+`store-assets/android/google-play-billing.md`.
+
+- `profiles.billing_source` ('stripe' or 'google_play') and
+  `profiles.google_play_purchase_token` track which system granted a
+  member's current plan, so one system's events can never revoke a plan the
+  other one granted — a Lifetime bought either way is never downgraded.
+- `GooglePlayCheckoutButton` (in the Android-only branch of
+  `PricingPlans.tsx`) launches the native Play Billing Library purchase
+  sheet, then calls `verifyGooglePlayPurchase` (a server action), which
+  re-verifies the purchase against the Android Publisher API — never trusts
+  the client's own claim — acknowledges it, and grants the plan. This
+  mirrors `startCheckout` for Stripe.
+- `/api/google-play/notifications` is the Real-time Developer Notifications
+  webhook: renewals, cancellations, billing-hold/grace-period states, and
+  refunds. It verifies the push request's signed OIDC token (Pub/Sub's
+  equivalent of Stripe's webhook signature) before trusting anything in it.
+- **Unlike Stripe, Google Play refunds and chargebacks revoke access
+  automatically** — Google sends a `voidedPurchaseNotification` that the
+  webhook handles the same way as an expiry. There is no manual "remove
+  access by hand" step for Google Play refunds the way there is for Stripe's
+  (see the refund routine above); only issue the refund itself in Play
+  Console's **Order management**.
+- A member who installs the app on a new device, or reinstalls it, uses
+  "Restore purchases" on the Membership page to re-link an existing active
+  purchase without paying again.
 
 ## Note for a US 501(c)(3)
 

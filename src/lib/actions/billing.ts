@@ -11,7 +11,7 @@ import {
   type CheckoutCycle,
 } from "@/lib/stripe";
 import { promo } from "@/data/pricing";
-import { isIosApp } from "@/lib/native-app";
+import { isIosApp, isAndroidApp } from "@/lib/native-app";
 
 async function origin() {
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL;
@@ -24,6 +24,12 @@ async function origin() {
 
 export async function startCheckout(formData: FormData): Promise<void> {
   if (await isIosApp()) redirect("/dashboard");
+  // Android purchases go through native Play Billing (see
+  // GooglePlayCheckoutButtons), never this Stripe flow — Google Play's
+  // Payments policy requires "dating" subscriptions to use Play Billing
+  // in-app. This is a defense-in-depth redirect; the Android UI never
+  // renders a form pointed at this action in the first place.
+  if (await isAndroidApp()) redirect("/membership");
   const plan = formData.get("plan");
   const cycle = (formData.get("cycle") as string) === "sixMonth" ? "sixMonth" : "monthly";
   if (plan !== "full_access" && plan !== "lifetime") {
@@ -86,6 +92,9 @@ export async function startCheckout(formData: FormData): Promise<void> {
 
 export async function openBillingPortal(formData?: FormData): Promise<void> {
   if (await isIosApp()) redirect("/account");
+  // Android Full Access members manage their subscription in Google Play,
+  // not Stripe's portal (see the account page's "Manage in Google Play" link).
+  if (await isAndroidApp()) redirect("/account");
   const returnTo = formData?.get("return_to") === "/account" ? "/account" : "/membership";
   if (!stripeConfigured()) redirect("/membership?error=payments_unavailable");
 
