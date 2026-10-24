@@ -23,7 +23,7 @@ App Store Connect > NikahPathway > **Monetization > Subscriptions**:
    | Product ID | Duration | Suggested price |
    | --- | --- | --- |
    | `full_access_monthly` | 1 month | $14.99 (the current launch price) |
-   | `full_access_six_month` | 6 months | $89.99 |
+   | `full_access_six_months` | 6 months | $89.99 |
 
 3. For each: fill in the reference name, localized display name/description
    (e.g. "Full Access, monthly"), and a **review screenshot** (a screenshot of

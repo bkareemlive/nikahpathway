@@ -8,7 +8,7 @@ export const APP_STORE_BUNDLE_ID = "com.nikahpathway.ios";
 
 export const APP_STORE_SUBSCRIPTION_PRODUCT_IDS = {
   monthly: "full_access_monthly",
-  sixMonth: "full_access_six_month",
+  sixMonth: "full_access_six_months",
 } as const;
 
 /** One-time (non-consumable) purchase. The underscore between "life" and
