@@ -1,12 +1,13 @@
-# Payments (Stripe + Google Play Billing)
+# Payments (Stripe + Google Play Billing + Apple In-App Purchase)
 
 Plan gating is live and works without Stripe. Checkout stays inert until the
 keys below are set — the buttons then start real Stripe Checkout.
 
-The web site and the iOS app use Stripe. **The Android app uses Google Play
-Billing instead** — Google Play's Payments policy requires "dating"
-subscriptions to use Play Billing in-app, so Stripe checkout is unreachable
-from inside the Android app. See the "Google Play Billing" section below.
+The web site uses Stripe. **The Android app uses Google Play Billing** and
+**the iOS app uses Apple In-App Purchase** instead — both stores require
+subscriptions sold inside an app to use their own billing, so Stripe checkout
+is unreachable from inside either app. See the "Google Play Billing" and
+"Apple In-App Purchase" sections below.
 
 ## Plans
 
@@ -153,6 +154,35 @@ Developer Notifications, testing without real charges):
 - A member who installs the app on a new device, or reinstalls it, uses
   "Restore purchases" on the Membership page to re-link an existing active
   purchase without paying again.
+
+## Apple In-App Purchase (iOS app)
+
+Full setup checklist (agreements, products, API key, notifications URL,
+sandbox testing): `store-assets/ios/app-store-billing.md`.
+
+- `profiles.billing_source` also takes `'apple'`, and
+  `profiles.apple_original_transaction_id` links a member to their App Store
+  subscription or purchase. Same rule as the other sources: an Apple event can
+  only revoke a plan Apple granted, and Lifetime is never downgraded.
+- Products (ids in `src/data/app-store-products.ts`, created by hand in App
+  Store Connect): subscription group "NikahPathway Membership" with
+  `full_access_monthly` and `full_access_six_month`, plus the non-consumable
+  `lifetime_access`. Prices are whatever App Store Connect says; the app shows
+  the live StoreKit price.
+- `ios/App/App/AppStoreBillingPlugin.swift` (StoreKit 2) runs the purchase and
+  stamps our user id on it (`appAccountToken`). `AppStoreCheckoutButton` then
+  calls `verifyAppStorePurchase`, which asks Apple's App Store Server API for
+  the transaction's real state — never trusting the client — and grants the
+  plan.
+- `/api/app-store/notifications` is the App Store Server Notifications V2
+  endpoint (renewals, expiry, refunds). The payload is never trusted; it only
+  names a transaction, and the real state is re-fetched from Apple before
+  anything is granted or revoked.
+- Apple refunds and revocations remove access automatically through those
+  notifications. Issue refunds only through Apple (reportaproblem.apple.com);
+  there is no manual step.
+- "Restore purchases" on the Membership page is required by App Review and
+  re-links an existing purchase to the signed-in account.
 
 ## Note for a US 501(c)(3)
 

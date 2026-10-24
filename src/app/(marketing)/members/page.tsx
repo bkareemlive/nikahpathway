@@ -6,7 +6,7 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { ProfileCard } from "@/components/ProfileCard";
 import { site } from "@/data/site";
 import { sisters, brothers } from "@/data/profiles";
-import { isIosApp } from "@/lib/native-app";
+import { isIosAppWithoutPurchases } from "@/lib/native-app";
 
 export const metadata: Metadata = {
   title: "Members",
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MembersPage() {
-  const native = await isIosApp();
+  const native = await isIosAppWithoutPurchases();
   return (
     <>
       <section className="border-b border-line bg-cream py-16">

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { limitsFor, NUDGE_COOLDOWN_HOURS } from "@/lib/plan";
-import { isIosApp } from "@/lib/native-app";
+import { isIosAppWithoutPurchases } from "@/lib/native-app";
 import { isoHoursAgo } from "@/lib/time";
 import { isBlockedBetween } from "@/lib/moderation";
 
@@ -43,7 +43,7 @@ export async function sendNudge(
     .maybeSingle<{ plan: string }>();
   if (!limitsFor(me?.plan).sendNudges) {
     return {
-      error: (await isIosApp())
+      error: (await isIosAppWithoutPurchases())
         ? "Nudges aren't available on your account."
         : "Upgrade to Full Access or Lifetime to send nudges.",
     };

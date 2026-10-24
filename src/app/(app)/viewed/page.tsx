@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireActiveProfile } from "@/lib/supabase/queries";
 import { ageFromDob } from "@/lib/profile-display";
 import { limitsFor } from "@/lib/plan";
-import { isIosApp } from "@/lib/native-app";
+import { isIosAppWithoutPurchases } from "@/lib/native-app";
 
 export const metadata: Metadata = { title: "Who viewed you" };
 
@@ -34,7 +34,7 @@ function when(iso: string) {
 export default async function ViewedPage() {
   const { supabase, user, profile } = await requireActiveProfile();
   const limits = limitsFor(profile.plan);
-  const native = await isIosApp();
+  const native = await isIosAppWithoutPurchases();
 
   const { count } = await supabase
     .from("profile_views")

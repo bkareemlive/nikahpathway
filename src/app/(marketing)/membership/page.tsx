@@ -9,7 +9,7 @@ import { planFeatures, pricingFaq } from "@/data/pricing";
 import { site } from "@/data/site";
 import { createClient } from "@/lib/supabase/server";
 import { planLabel } from "@/lib/plan";
-import { isIosApp, isAndroidApp } from "@/lib/native-app";
+import { isIosApp, isIosAppWithPurchases, isAndroidApp } from "@/lib/native-app";
 
 export const metadata: Metadata = {
   title: "Membership",
@@ -42,8 +42,15 @@ export default async function PricingPage({
 }: {
   searchParams: Promise<{ error?: string; canceled?: string }>;
 }) {
-  if (await isIosApp()) redirect("/dashboard");
-  const platform: "web" | "android" = (await isAndroidApp()) ? "android" : "web";
+  // An iOS build without native billing (the first release) has nothing to
+  // sell with: Stripe is not allowed in the app and there is no In-App
+  // Purchase to offer instead.
+  if ((await isIosApp()) && !(await isIosAppWithPurchases())) redirect("/dashboard");
+  const platform: "web" | "android" | "ios" = (await isIosApp())
+    ? "ios"
+    : (await isAndroidApp())
+      ? "android"
+      : "web";
   const sp = await searchParams;
   const noticeKey = sp.canceled ? "canceled" : sp.error;
   const notice = noticeKey ? NOTICES[noticeKey] : undefined;
@@ -53,13 +60,15 @@ export default async function PricingPage({
     data: { user },
   } = await supabase.auth.getUser();
   let currentPlan: string | null = null;
+  let billingSource: string | null = null;
   if (user) {
     const { data } = await supabase
       .from("profiles")
-      .select("plan")
+      .select("plan, billing_source")
       .eq("id", user.id)
-      .maybeSingle<{ plan: string }>();
+      .maybeSingle<{ plan: string; billing_source: string | null }>();
     currentPlan = data?.plan ?? "free";
+    billingSource = data?.billing_source ?? null;
   }
 
   return (
@@ -100,10 +109,13 @@ export default async function PricingPage({
             currentPlan={currentPlan}
             platform={platform}
             userId={user?.id ?? null}
+            billingSource={billingSource}
           />
-          <p className="mt-8 text-center text-sm text-muted">
-            Every paid plan includes a 7-day money-back guarantee.
-          </p>
+          {platform !== "ios" && (
+            <p className="mt-8 text-center text-sm text-muted">
+              Every paid plan includes a 7-day money-back guarantee.
+            </p>
+          )}
         </Container>
       </section>
 
@@ -140,7 +152,17 @@ export default async function PricingPage({
         <Container className="max-w-3xl">
           <SectionHeading eyebrow="FAQ" title="Frequently asked questions" center />
           <div className="mt-10">
-            <Faq items={pricingFaq} />
+            <Faq
+              items={
+                // Apple processes iOS payments and refunds, so the web-checkout
+                // and 7-day-refund answers don't apply there.
+                platform === "ios"
+                  ? pricingFaq.filter(
+                      (f) => !f.a.includes("money-back") && !f.q.includes("paying on the site"),
+                    )
+                  : pricingFaq
+              }
+            />
           </div>
         </Container>
       </section>

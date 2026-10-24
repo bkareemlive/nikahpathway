@@ -6,6 +6,12 @@ import { plans, promo } from "@/data/pricing";
 import { site } from "@/data/site";
 import { startCheckout, openBillingPortal } from "@/lib/actions/billing";
 import { GooglePlayCheckoutButton, RestoreGooglePlayPurchasesLink } from "./GooglePlayCheckoutButtons";
+import {
+  AppStoreCheckoutButton,
+  RestoreAppStorePurchasesLink,
+  AppStoreSubscriptionTerms,
+} from "./AppStoreCheckoutButtons";
+import { APP_STORE_MANAGE_SUBSCRIPTIONS_URL } from "@/data/app-store-products";
 
 const check = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary">
@@ -28,9 +34,12 @@ function CheckoutButton({
   plan: "full_access" | "lifetime";
   cycle: "monthly" | "sixMonth";
   label: string;
-  platform: "web" | "android";
+  platform: "web" | "android" | "ios";
   userId: string | null;
 }) {
+  if (platform === "ios" && userId) {
+    return <AppStoreCheckoutButton plan={plan} cycle={cycle} label={label} userId={userId} />;
+  }
   if (platform === "android" && userId) {
     return (
       <GooglePlayCheckoutButton
@@ -58,14 +67,18 @@ export function PricingPlans({
   currentPlan = null,
   platform = "web",
   userId = null,
+  billingSource = null,
 }: {
   loggedIn?: boolean;
   currentPlan?: string | null;
   /** "android" swaps the checkout buttons for native Play Billing instead
    * of Stripe — Google Play's Payments policy requires "dating"
    * subscriptions to use Play Billing in-app. */
-  platform?: "web" | "android";
+  platform?: "web" | "android" | "ios";
   userId?: string | null;
+  /** Which system bills the member's current plan, so "manage" points at
+   * the right place. */
+  billingSource?: string | null;
 }) {
   const [cycle, setCycle] = useState<"monthly" | "sixMonth">("monthly");
   const hasLifetime = currentPlan === "lifetime";
@@ -214,7 +227,16 @@ export function PricingPlans({
             ) : hasFullAccess ? (
               <div className="grid gap-2">
                 <span className={disabledBtn}>Current plan</span>
-                {platform === "android" ? (
+                {platform === "ios" ? (
+                  billingSource === "apple" && (
+                    <a
+                      href={APP_STORE_MANAGE_SUBSCRIPTIONS_URL}
+                      className="w-full text-center text-xs font-medium text-primary hover:underline"
+                    >
+                      Manage subscription
+                    </a>
+                  )
+                ) : platform === "android" ? (
                   <a
                     href="https://play.google.com/store/account/subscriptions?package=com.nikahpathway.app"
                     target="_blank"
@@ -305,6 +327,8 @@ export function PricingPlans({
         </div>
       </div>
       {platform === "android" && loggedIn && <RestoreGooglePlayPurchasesLink />}
+      {platform === "ios" && loggedIn && <RestoreAppStorePurchasesLink />}
+      {platform === "ios" && <AppStoreSubscriptionTerms />}
     </div>
   );
 }
