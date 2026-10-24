@@ -11,8 +11,10 @@ export const APP_STORE_SUBSCRIPTION_PRODUCT_IDS = {
   sixMonth: "full_access_six_month",
 } as const;
 
-/** One-time (non-consumable) purchase. */
-export const APP_STORE_LIFETIME_PRODUCT_ID = "lifetime_access";
+/** One-time (non-consumable) purchase. The underscore between "life" and
+ * "time" is deliberate: it is the id the product was created with, and App
+ * Store Connect never lets a Product ID be renamed or reused. */
+export const APP_STORE_LIFETIME_PRODUCT_ID = "life_time_access";
 
 export type AppStoreCycle = keyof typeof APP_STORE_SUBSCRIPTION_PRODUCT_IDS;
 
