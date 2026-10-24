@@ -166,7 +166,7 @@ sandbox testing): `store-assets/ios/app-store-billing.md`.
   only revoke a plan Apple granted, and Lifetime is never downgraded.
 - Products (ids in `src/data/app-store-products.ts`, created by hand in App
   Store Connect): subscription group "NikahPathway Membership" with
-  `full_access_monthly` and `full_access_six_month`, plus the non-consumable
+  `full_access_monthly` and `full_access_six_months`, plus the non-consumable
   `life_time_access`. Prices are whatever App Store Connect says; the app shows
   the live StoreKit price.
 - `ios/App/App/AppStoreBillingPlugin.swift` (StoreKit 2) runs the purchase and
