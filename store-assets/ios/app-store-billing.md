@@ -31,7 +31,7 @@ App Store Connect > NikahPathway > **Monetization > Subscriptions**:
 
 App Store Connect > **Monetization > In-App Purchases**:
 
-4. Create a **Non-Consumable** with Product ID `lifetime_access`, price
+4. Create a **Non-Consumable** with Product ID `life_time_access`, price
    **$149.99**, display name "Lifetime", and a review screenshot.
 
 Apple's price points don't include $90.00, so $89.99 is the nearest to the web's
