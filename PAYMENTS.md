@@ -167,7 +167,7 @@ sandbox testing): `store-assets/ios/app-store-billing.md`.
 - Products (ids in `src/data/app-store-products.ts`, created by hand in App
   Store Connect): subscription group "NikahPathway Membership" with
   `full_access_monthly` and `full_access_six_month`, plus the non-consumable
-  `lifetime_access`. Prices are whatever App Store Connect says; the app shows
+  `life_time_access`. Prices are whatever App Store Connect says; the app shows
   the live StoreKit price.
 - `ios/App/App/AppStoreBillingPlugin.swift` (StoreKit 2) runs the purchase and
   stamps our user id on it (`appAccountToken`). `AppStoreCheckoutButton` then
