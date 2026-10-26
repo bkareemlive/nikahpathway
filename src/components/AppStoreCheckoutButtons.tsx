@@ -24,6 +24,7 @@ export function AppStoreCheckoutButton({
   const productId = appStoreProductId(plan, cycle);
   const [price, setPrice] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [detail, setDetail] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -35,11 +36,17 @@ export function AppStoreCheckoutButton({
       .then(({ products }) => {
         if (cancelled) return;
         setPrice(products[0]?.displayPrice ?? null);
+        if (products.length === 0) {
+          setDetail(`App Store returned no product for ${productId}.`);
+        }
         setLoaded(true);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (cancelled) return;
         setPrice(null);
+        const message =
+          err && typeof err === "object" && "message" in err ? String(err.message) : String(err);
+        setDetail(message);
         setLoaded(true);
       });
     return () => {
@@ -87,7 +94,10 @@ export function AppStoreCheckoutButton({
       </button>
       {caption && <p className="mt-2 text-center text-xs text-muted">{caption}</p>}
       {loaded && price === null && (
-        <p className="mt-2 text-center text-xs text-muted">This plan isn&apos;t available right now.</p>
+        <p className="mt-2 text-center text-xs text-muted">
+          This plan isn&apos;t available right now.
+          {detail && <span className="mt-1 block break-words opacity-70">{detail}</span>}
+        </p>
       )}
       {notice && <p className="mt-2 text-xs text-muted">{notice}</p>}
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
