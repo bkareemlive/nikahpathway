@@ -56,7 +56,10 @@ async function apiGet<T>(path: string): Promise<T> {
     });
     if (res.ok) return (await res.json()) as T;
     lastError = `${res.status} ${await res.text()}`;
-    if (res.status !== 404) break;
+    // 404 = transaction exists but not in this environment (try sandbox).
+    // 401 = production rejects our key; still try sandbox because TestFlight
+    //       transactions only exist in the sandbox environment.
+    if (res.status !== 404 && res.status !== 401) break;
   }
   throw new Error(`App Store Server API: ${lastError}`);
 }
