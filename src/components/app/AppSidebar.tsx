@@ -40,7 +40,7 @@ export function AppSidebar({
     plan === "lifetime" ? "Lifetime" : plan === "full_access" ? "Full Access" : "Free";
 
   return (
-    <aside className="border-b border-line bg-white px-5 py-5 sm:px-8 lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r lg:px-6 lg:py-8">
+    <aside className="app-sidebar border-b border-line bg-white px-5 pb-5 sm:px-8 lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r lg:px-6 lg:pb-8">
       <Logo />
 
       <nav className="mt-6 flex gap-1 overflow-x-auto lg:mt-8 lg:flex-col">
