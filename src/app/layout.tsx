@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { site } from "@/data/site";
@@ -15,6 +15,10 @@ const fraunces = Fraunces({
   display: "swap",
   weight: ["400", "500", "600", "700"],
 });
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),

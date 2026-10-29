@@ -15,7 +15,7 @@ export function Header({ isAuthed = false, native = false }: { isAuthed?: boolea
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-white/85 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-line bg-white/85 backdrop-blur" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <Container className="flex h-16 items-center justify-between">
         <Logo />
 
