@@ -22,7 +22,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         // Bumped from 1: Play Console requires a strictly increasing
         // versionCode for every new upload, and 1 is already on Production.
-        versionCode 2
+        versionCode 4
         versionName "1.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
