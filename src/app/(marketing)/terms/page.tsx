@@ -14,7 +14,7 @@ export default function TermsPage() {
         <h1 className="font-display text-4xl font-semibold tracking-tight text-ink">
           Terms of Service
         </h1>
-        <p className="mt-3 text-sm text-muted">Last updated: 18 September 2026</p>
+        <p className="mt-3 text-sm text-muted">Last updated: 9 November 2026</p>
 
         <div className="prose-nikah mt-10">
           <p>
@@ -99,8 +99,9 @@ export default function TermsPage() {
             <li>misrepresenting who you are, your marital status, or any material fact on your profile;</li>
             <li>sharing another member&apos;s contact details, guardian&apos;s details, or private messages without their consent;</li>
             <li>soliciting money, promoting a business, or using the service for any purpose other than seeking marriage;</li>
-            <li>pressuring another member to move communication off the platform before it is appropriate to do so; and</li>
-            <li>any conduct that is dishonest, abusive, or contrary to the sharia principles this service is built on.</li>
+            <li>pressuring another member to move communication off the platform before it is appropriate to do so;</li>
+            <li>any conduct that is dishonest, abusive, or contrary to the sharia principles this service is built on; and</li>
+            <li>child sexual abuse or exploitation (CSAE) in any form. {site.name} is restricted to adults 18 and over (see Section 1) and has zero tolerance for CSAE: any such content or conduct is removed immediately, the account is permanently banned, and the matter is reported to the National Center for Missing &amp; Exploited Children (NCMEC) and other authorities as required by law.</li>
           </ul>
 
           <h2>7. Reporting and moderation</h2>
@@ -111,6 +112,14 @@ export default function TermsPage() {
             prior notice, depending on severity. A suspended account is hidden
             from other members and loses access to the service until the
             suspension is lifted.
+          </p>
+          <p>
+            To report suspected child sexual abuse or exploitation (CSAE), contact
+            our child safety point of contact directly at{" "}
+            <a href="mailto:info@alfurqaninternational.org">
+              info@alfurqaninternational.org
+            </a>
+            . These reports receive immediate priority review.
           </p>
 
           <h2>8. Your content</h2>
